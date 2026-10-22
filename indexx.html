@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>DersxGramm</title>
+<style>
+:root{--bg-color:#000;--panel-color:#1c1c1e;--panel-2-color:#2c2c2e;--text-main:#fff;--text-muted:#8e8e93;--border-color:#000;--app-bg:#0e0e0e;--accent:#0a84ff;--star-color:#ff9f0a}
+body.light-theme{--bg-color:#fff;--panel-color:#efeff4;--panel-2-color:#d1d1d6;--text-main:#000;--text-muted:#6c6c70;--border-color:#c7c7cc;--app-bg:#f2f2f7}
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+html,body{height:100%;width:100%;background-color:var(--bg-color);color:var(--text-main);overflow:hidden;transition:.3s}
+.app{width:100%;max-width:450px;height:100%;margin:0 auto;background-color:var(--app-bg);position:relative;display:flex;flex-direction:column;overflow:hidden;transition:.3s}
+.creator-check{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#f00,#ff7f00,#ff0,#0f0,#00f,#4b0082,#8b00ff);color:#fff;font-size:12px;font-weight:bold;cursor:pointer;margin-left:6px;box-shadow:0 0 8px rgba(255,255,255,.4);animation:pulse 3s infinite alternate;vertical-align:middle}
+@keyframes pulse{0%{box-shadow:0 0 5px rgba(255,0,0,.5)}50%{box-shadow:0 0 15px rgba(0,255,0,.5)}100%{box-shadow:0 0 5px rgba(0,0,255,.5)}}
+.avatar-content{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:inherit;color:inherit}
+.avatar-content img{width:100%;height:100%;object-fit:cover}
+
+/* ЭКРАН ВХОДА */
+#authScreen { display:flex; flex-direction:column; height:100%; justify-content:center; padding:30px; background:var(--app-bg); overflow-y:auto; }
+.auth-title { font-size:26px; font-weight:bold; margin-bottom:10px; text-align:center; }
+.auth-sub { color:var(--text-muted); text-align:center; margin-bottom:30px; font-size:14px; }
+.input-group{margin-bottom:15px}
+.input-group label{display:block;font-size:13px;color:var(--text-muted);margin-bottom:8px}
+.input-group input{width:100%;padding:14px;background:var(--panel-color);border:1px solid var(--panel-2-color);border-radius:10px;color:var(--text-main);font-size:16px;outline:none}
+.btn-login{width:100%;padding:16px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:bold;margin-top:20px;cursor:pointer}
+.error { color:#ff453a; text-align:center; margin-top:10px; font-size:14px; }
+
+/* ОСТАЛЬНОЙ ИНТЕРФЕЙС */
+#mainScreen, #contactsScreen, #privateChatScreen, #profileScreen, #settingsScreen, #starsScreen, #marketScreen { display:none; flex-direction:column; height:100%; background:var(--app-bg); }
+.header-main{display:flex;align-items:center;justify-content:space-between;padding:12px 16px}
+.header-left{display:flex;align-items:center;gap:12px}
+.theme-toggle{font-size:24px;cursor:pointer;padding:4px;border-radius:50%}
+.header-title{font-size:24px;font-weight:600}
+.search-bar-container{padding:0 16px 12px}
+.search-bar{background:var(--panel-color);border-radius:20px;display:flex;align-items:center;padding:10px 14px;gap:10px}
+.search-bar input{background:transparent;border:none;outline:none;color:var(--text-main);font-size:16px;width:100%}
+.chat-list{flex:1;overflow-y:auto}
+.chat-item{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;position:relative}
+.chat-avatar{width:55px;height:55px;border-radius:50%;background:var(--panel-color);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:bold;overflow:hidden;flex-shrink:0}
+.chat-info{flex:1;min-width:0}
+.chat-name{font-weight:600;font-size:16px;margin-bottom:4px}
+.chat-msg{font-size:14px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.delete-chat-btn { position:absolute; right:16px; top:50%; transform:translateY(-50%); color:#ff453a; font-size:20px; cursor:pointer; display:none; padding:5px; z-index:2;}
+.chat-item:hover .delete-chat-btn, .contact-item:hover .delete-chat-btn { display:block; }
+
+.empty-contacts{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:20px;text-align:center}
+.btn-new-contact{background:var(--accent);color:#fff;border:none;border-radius:30px;padding:14px 40px;font-size:16px;font-weight:600;cursor:pointer;margin-top:20px}
+.contact-list{padding:10px 16px;overflow-y:auto}
+.contact-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--panel-2-color);cursor:pointer;position:relative}
+
+#privateChatScreen{position:relative;padding-bottom:calc(75px + env(safe-area-inset-bottom))}
+.chat-bg{position:absolute;inset:0;z-index:0;background:#0e0e0e;opacity:.8;background-size:cover;background-position:center}
+.private-chat-header{display:flex;align-items:center;padding:12px 16px;background:var(--panel-color);border-bottom:1px solid var(--panel-2-color);z-index:1}
+.private-chat-header .back-btn{font-size:24px;margin-right:12px;cursor:pointer}
+.private-chat-header .avatar{width:40px;height:40px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:18px;margin-right:12px;color:#fff}
+.private-chat-header .name{font-size:18px;font-weight:600}
+.private-chat-header .bg-btn{margin-left:auto;font-size:20px;cursor:pointer;padding:4px}
+.chat-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:10px;z-index:1}
+.msg-bubble{max-width:80%;padding:10px 14px;border-radius:16px;font-size:15px;line-height:1.4;word-break:break-word}
+.msg-bubble.me{align-self:flex-end;background:#2b5278;color:#fff;border-bottom-right-radius:4px}
+.msg-bubble.them{align-self:flex-start;background:var(--panel-2-color);color:var(--text-main);border-bottom-left-radius:4px}
+.msg-bubble img{max-width:100%;border-radius:8px;margin-top:5px;display:block}
+.msg-bubble .gift-emoji{font-size:50px;display:block;text-align:center;margin-bottom:5px}
+
+.msg-input-area{ padding:10px 12px; background:var(--app-bg); display:flex; align-items:center; gap:8px; z-index:10; position:absolute; bottom:calc(65px + env(safe-area-inset-bottom)); left:0; right:0; }
+.input-capsule{ flex:1; background:var(--panel-2-color); border-radius:24px; display:flex; align-items:center; padding:8px 12px; gap:6px; min-height:44px; }
+.input-capsule .smile-icon{font-size:22px;color:var(--text-muted);cursor:pointer}
+.input-capsule input{flex:1;background:transparent;border:none;outline:none;color:var(--text-main);font-size:16px; min-width:0;}
+.input-capsule .clip-icon{font-size:18px;color:var(--text-muted);cursor:pointer}
+.send-btn-circle{width:44px;height:44px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;flex-shrink:0;}
+.send-btn-circle svg{width:20px;height:20px;fill:#fff;margin-right:2px}
+
+.emoji-panel{position:absolute;bottom:calc(120px + env(safe-area-inset-bottom));left:16px;right:16px;background:var(--panel-color);border-radius:16px;padding:10px;display:none;grid-template-columns:repeat(6,1fr);gap:8px;z-index:20;box-shadow:0 5px 20px rgba(0,0,0,.5);max-height:200px;overflow-y:auto}
+.emoji-panel.open{display:grid}
+.emoji-panel span{font-size:28px;text-align:center;cursor:pointer;padding:5px;border-radius:8px}
+
+#profileScreen{overflow-y:auto;padding-bottom:calc(70px + env(safe-area-inset-bottom) + 20px);position:relative}
+.creator-bg{position:absolute;inset:0;z-index:0;background-color:#1a1a1a;background-image:url('https://www.transparenttextures.com/patterns/stardust.png');background-size:300px;opacity:.8}
+.creator-bg-overlay{position:absolute;inset:0;z-index:0;background:linear-gradient(to bottom,rgba(0,0,0,.2),var(--app-bg))}
+.profile-content-wrapper{position:relative;z-index:1;display:flex;flex-direction:column;height:100%}
+.profile-top-nav{display:flex;justify-content:space-between;align-items:center;padding:16px}
+.profile-top-nav .nav-icon{font-size:24px;cursor:pointer}
+.profile-header{display:flex;flex-direction:column;align-items:center;padding:10px 16px 20px}
+.profile-avatar-wrapper{position:relative;margin-bottom:12px;cursor:pointer}
+.profile-avatar-large{width:100px;height:100px;border-radius:50%;background:var(--panel-color);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:40px;border:3px solid transparent;transition:.3s}
+.profile-avatar-large.has-story{border-color:#32d74b;padding:3px;background-clip:content-box}
+.camera-badge{position:absolute;bottom:0;right:0;background:var(--accent);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid var(--app-bg);font-size:16px}
+.profile-name-large{font-size:22px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:4px}
+.profile-status-block{display:flex;align-items:center;gap:6px;margin-top:6px;background:var(--panel-2-color);padding:4px 12px;border-radius:20px;font-size:13px;color:var(--text-main)}
+.status-icon-box{background:#fff;color:#000;width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:12px}
+.online-dot{width:8px;height:8px;border-radius:50%;background:#32d74b;display:inline-block}
+.info-block{background:var(--panel-color);border-radius:12px;margin:0 16px 10px;padding:12px 16px}
+.info-value{font-size:16px;font-weight:500;margin-bottom:2px}
+.info-label{font-size:13px;color:var(--text-muted)}
+
+.creator-tags{font-size:14px;line-height:1.4;margin-top:4px}
+.creator-tags .tag-link{color:#64d2ff;text-decoration:none; display:block; margin-top:4px;}
+.creator-tags .tag-main{display:block;font-size:16px;font-weight:500;color:#64d2ff;margin-bottom:4px}
+.creator-tags .tag-sub{color:var(--text-muted);font-size:13px; display:block;}
+.creator-tags .tag-sub .tag-link { display:inline-block; margin-right:5px; }
+
+.publications-tabs{display:flex;gap:10px;padding:0 16px;margin-bottom:20px;overflow-x:auto;width:100%;}
+.pub-tab{padding:8px 16px;border-radius:20px;font-size:15px;font-weight:500;color:var(--text-muted);background:var(--panel-color);cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.pub-tab.active{background:#2b5278;color:#fff}
+
+.empty-pubs{display:flex;flex-direction:column;align-items:center;padding:40px 20px;text-align:center}
+.btn-add-story{background:#2b5278;color:#fff;border:none;border-radius:30px;padding:12px 30px;font-size:16px;font-weight:600;cursor:pointer;margin-top:10px}
+.pubs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:0 16px}
+.pub-item{aspect-ratio:1;background:var(--panel-color);overflow:hidden;cursor:pointer;position:relative}
+.pub-item img,.pub-item video{width:100%;height:100%;object-fit:cover}
+
+#settingsScreen, #starsScreen, #marketScreen { overflow-y:auto; padding-bottom:calc(70px + env(safe-area-inset-bottom) + 20px); }
+.settings-top-nav{display:flex;align-items:center;padding:16px}
+.settings-group{background:var(--panel-color);border-radius:12px;margin:10px 16px 20px;overflow:hidden}
+.settings-item{display:flex;align-items:center;padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--border-color)}
+.settings-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-right:14px;color:#fff}
+.bg-blue{background:#0a84ff}.bg-orange{background:#ff9f0a}.bg-green{background:#32d74b}
+.settings-title{font-size:16px;color:var(--text-main)}
+.stars-hero{display:flex;flex-direction:column;align-items:center;padding:20px}
+.big-star{font-size:120px;animation:float 3s ease-in-out infinite}
+@keyframes float{0%{transform:translateY(0)}50%{transform:translateY(-15px)}100%{transform:translateY(0)}}
+.stars-balance-card{background:var(--panel-color);border-radius:16px;margin:20px 16px;padding:24px;display:flex;flex-direction:column;align-items:center}
+.balance-amount{font-size:36px;font-weight:bold;display:flex;align-items:center;gap:8px}
+.btn-action{width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:12px;font-size:16px;margin-top:20px;cursor:pointer}
+
+.bottom-nav{position:absolute;bottom:0;left:0;right:0;height:calc(65px + env(safe-area-inset-bottom));background:var(--panel-color);display:flex;justify-content:space-around;align-items:flex-start;padding-top:8px;z-index:100;border-top:1px solid var(--panel-2-color)}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text-muted);font-size:11px;cursor:pointer;width:60px}
+.nav-item.active{color:var(--accent)}
+.nav-item .icon{font-size:24px}
+.nav-icon img{width:26px;height:26px;border-radius:50%;object-fit:cover}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;justify-content:center;align-items:center;z-index:1000;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--panel-color);padding:20px;border-radius:16px;width:100%;max-width:340px;text-align:center}
+.modal-box input{width:100%;padding:12px;margin-bottom:10px;border-radius:10px;border:1px solid var(--panel-2-color);background:var(--app-bg);color:var(--text-main);font-size:16px;outline:none}
+.modal-box button{width:100%;padding:12px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-size:16px;font-weight:bold;cursor:pointer;margin-top:10px}
+.modal-box button.cancel{background:transparent;color:var(--text-muted)}
+.gift-item{display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--panel-2-color);border-radius:12px;margin-bottom:8px;cursor:pointer}
+.gift-emoji{font-size:30px}.gift-name{flex:1;margin-left:10px;font-size:16px;font-weight:500}.gift-price{font-size:15px;color:var(--star-color);font-weight:bold}
+.market-item{display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--panel-2-color);border-radius:12px;margin-bottom:8px;cursor:pointer}
+.story-action-menu{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:3000;display:none;flex-direction:column;justify-content:flex-end}
+.story-action-menu.open{display:flex}
+.story-action-content{background:var(--panel-color);border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px}
+.story-action-btn{padding:16px;background:var(--panel-2-color);border-radius:12px;text-align:center;font-size:16px;font-weight:600;color:var(--text-main);cursor:pointer}
+.story-action-btn.delete{color:#ff453a}
+#storyViewer{position:fixed;inset:0;background:#000;z-index:2000;display:none;flex-direction:column}
+.story-header{padding:20px;display:flex;align-items:center;gap:12px;z-index:2;background:linear-gradient(to bottom,rgba(0,0,0,.8),transparent)}
+.story-progress{flex:1;height:3px;background:rgba(255,255,255,.3);border-radius:3px;overflow:hidden}
+.story-progress-bar{height:100%;background:#fff;width:0%;transition:width .1s linear}
+.story-close{color:#fff;font-size:30px;cursor:pointer}
+.story-media-container{flex:1;display:flex;align-items:center;justify-content:center;position:relative}
+.story-media-container img,.story-media-container video{max-width:100%;max-height:100%;object-fit:contain}
+</style>
+</head>
+<body>
+<div class="app">
+
+    <!-- ЭКРАН ВХОДА (Появится только если нет сессии) -->
+    <div id="authScreen" style="display:none;">
+        <div class="auth-title">DersxGramm</div>
+        <div class="auth-sub">Введите имя и номер. Если аккаунта нет, он создастся автоматически.</div>
+        <div class="input-group"><label>Ваше имя (Никнейм)</label><input type="text" id="loginName" placeholder="Например, lopinv"></div>
+        <div class="input-group"><label>Номер телефона (только +7)</label><input type="text" id="loginPhone" placeholder="+79999688666"></div>
+        <button class="btn-login" onclick="doLogin()">Войти / Зарегистрироваться</button>
+        <div class="error" id="loginError"></div>
+    </div>
+
+    <!-- ГЛАВНЫЕ ЭКРАНЫ -->
+    <div id="mainScreen">
+        <div class="header-main"><div class="header-left"><div class="theme-toggle" id="themeToggle" onclick="toggleTheme()">☀️</div><div class="header-title">DersxGramm</div></div></div>
+        <div class="search-bar-container"><div class="search-bar"><span>🔍</span><input type="text" placeholder="Поиск чатов"></div></div>
+        <div class="chat-list" id="chatList"></div>
+    </div>
+
+    <div id="contactsScreen">
+        <div class="header-main"><div class="header-title">Контакты</div></div>
+        <div id="emptyContactsBlock" class="empty-contacts">
+            <img src="https://cdn-icons-png.flaticon.com/512/3468/3468377.png" style="width:100px; margin-bottom:15px;">
+            <h2>Добавить контакты</h2><p>У Вас пока нет контактов</p>
+            <button class="btn-new-contact" onclick="document.getElementById('addContactModal').classList.add('open')">👤 Новый контакт</button>
+        </div>
+        <div id="contactsListBlock" class="contact-list" style="display:none;"></div>
+    </div>
+
+    <div id="privateChatScreen">
+        <div class="chat-bg" id="chatBg"></div>
+        <div class="private-chat-header">
+            <div class="back-btn" onclick="switchScreen('mainScreen')">←</div>
+            <div class="avatar" id="chatHeaderAvatar">A</div>
+            <div class="name" id="chatHeaderName">Контакт</div>
+            <div class="bg-btn" onclick="document.getElementById('bgModal').classList.add('open')">🎨</div>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="emoji-panel" id="emojiPanel"></div>
+        
+        <div class="msg-input-area">
+            <div class="input-capsule">
+                <span class="smile-icon" onclick="document.getElementById('emojiPanel').classList.toggle('open')">☺</span>
+                <input type="text" id="msgInput" placeholder="Сообщение..." autocomplete="off">
+                <span class="clip-icon" onclick="document.getElementById('chatFileUpload').click()">📎</span>
+                <span class="smile-icon" onclick="openGiftModal()">🎁</span>
+            </div>
+            <button class="send-btn-circle" onclick="sendMessage()"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg></button>
+        </div>
+        <input type="file" id="chatFileUpload" accept="image/*" style="display:none;" onchange="sendPhoto(event)">
+    </div>
+
+    <div id="profileScreen">
+        <div id="creatorBackground" style="display:none;"><div class="creator-bg"></div><div class="creator-bg-overlay"></div></div>
+        <div class="profile-content-wrapper">
+            <div class="profile-top-nav"><div class="nav-icon">▦</div><div style="display:flex; gap:20px;"><div class="nav-icon">⋮</div></div></div>
+            <div class="profile-header">
+                <input type="file" id="avatarUpload" accept="image/*" style="display:none;" onchange="uploadAvatar(event)">
+                <div class="profile-avatar-wrapper" id="avatarWrapper" onclick="handleAvatarClick()">
+                    <div class="profile-avatar-large" id="profileAvatarLarge"><div class="avatar-content" id="profileAvatarContent">?</div></div>
+                    <div class="camera-badge" onclick="event.stopPropagation(); document.getElementById('avatarUpload').click()">📷</div>
+                </div>
+                <div class="profile-name-large" id="displayName">Гость</div>
+                <div class="profile-status-block" id="profileStatusBlock">
+                    <div class="status-icon-box" id="userLevel">1</div>
+                    <div class="status-text" id="profileStatusText"><span class="online-dot"></span> в сети</div>
+                </div>
+            </div>
+            <div class="info-block"><div class="info-value" id="infoPhone">Номер не указан</div><div class="info-label" id="infoPhoneLabel">Телефон</div></div>
+            <div class="info-block">
+                <div id="infoUsernameContainer"><div class="info-value" id="infoUsername">@username</div></div>
+                <div class="info-label">Имя пользователя</div>
+            </div>
+            <div class="publications-tabs">
+                <div class="pub-tab active" onclick="setPubTab(this, 'active')">Публикации</div>
+                <div class="pub-tab" onclick="setPubTab(this, 'archive')">Архив</div>
+            </div>
+            <div id="pubsContentActive">
+                <div class="empty-pubs" id="emptyPubs">
+                    <h3>Публикаций пока нет...</h3>
+                    <input type="file" id="storyUpload" accept="image/*, video/*" style="display:none;" onchange="uploadStory(event)">
+                    <button class="btn-add-story" onclick="document.getElementById('storyUpload').click()">📷 Добавить</button>
+                </div>
+                <div class="pubs-grid" id="pubsGrid" style="display:none;"></div>
+            </div>
+            <div id="pubsContentArchive" style="display:none;"><div class="empty-pubs"><h3>Архив пуст</h3></div></div>
+        </div>
+    </div>
+
+    <div id="settingsScreen">
+        <div class="settings-top-nav"><div class="back-btn" onclick="switchScreen('mainScreen')">←</div><div class="title" style="font-size:20px; font-weight:600; margin-left:10px;">Настройки</div></div>
+        <div class="settings-group">
+            <div class="settings-item" onclick="openEditModal()"><div class="settings-icon bg-blue">👤</div><div class="settings-title">Аккаунт</div></div>
+            <div class="settings-item" onclick="switchScreen('starsScreen')"><div class="settings-icon bg-orange">⭐</div><div class="settings-title" style="flex:1; display:flex; justify-content:space-between;"><span>Звёзды DersxGramm</span><span id="miniStarsBalance" style="color:var(--accent);">0</span></div></div>
+            <div class="settings-item" onclick="openMarketScreen()"><div class="settings-icon bg-green">🛍️</div><div class="settings-title">Market (NFT)</div></div>
+        </div>
+        <div style="text-align:center; margin-top:20px;"><span style="color:#ff453a; cursor:pointer;" onclick="resetApp()">Выйти</span></div>
+    </div>
+
+    <div id="starsScreen">
+        <div class="settings-top-nav"><div class="back-btn" onclick="switchScreen('settingsScreen')">←</div></div>
+        <div class="stars-hero"><div class="big-star">⭐</div><div style="font-size:24px; font-weight:bold; margin-top:10px;">Звёзды DersxGramm</div></div>
+        <div class="stars-balance-card">
+            <div style="color:var(--text-muted); font-size:14px; margin-bottom:8px;">Ваш баланс</div>
+            <div class="balance-amount"><span style="color:#ff9f0a;">⭐</span> <span id="bigStarsBalance">0</span></div>
+            <button class="btn-action" onclick="openPromoModal()">🎁 Ввести промокод</button>
+        </div>
+    </div>
+
+    <div id="marketScreen" style="display:none; flex-direction:column; height:100%; background:var(--app-bg); overflow-y:auto;">
+        <div class="settings-top-nav"><div class="back-btn" onclick="switchScreen('settingsScreen')">←</div><div class="title" style="font-size:20px; font-weight:600; margin-left:10px;">Market</div></div>
+        <div class="settings-group" id="marketList"></div>
+    </div>
+
+    <div class="bottom-nav" id="bottomNav" style="display:none;">
+        <div class="nav-item" id="navChats" onclick="switchScreen('mainScreen')"><div class="icon">💬</div><div>Чаты</div></div>
+        <div class="nav-item" id="navContacts" onclick="switchScreen('contactsScreen')"><div class="icon">👤</div><div>Контакты</div></div>
+        <div class="nav-item" id="navSettings" onclick="switchScreen('settingsScreen')"><div class="icon">⚙️</div><div>Настройки</div></div>
+        <div class="nav-item" id="navProfile" onclick="switchScreen('profileScreen')"><div class="nav-icon" id="bottomNavAvatar">?</div><div>Профиль</div></div>
+    </div>
+</div>
+
+<!-- МОДАЛКИ -->
+<div class="modal-overlay" id="addContactModal"><div class="modal-box"><h3>Новый контакт</h3><input type="text" id="contactName" placeholder="Имя"><input type="text" id="contactPhone" placeholder="Номер"><button onclick="saveContact()">Создать</button><button class="cancel" onclick="document.getElementById('addContactModal').classList.remove('open')">Отмена</button></div></div>
+<div class="modal-overlay" id="editModal"><div class="modal-box"><h3>Редактировать</h3><input type="text" id="inputName" placeholder="Имя"><input type="text" id="inputUsername" placeholder="Юзернейм"><input type="text" id="inputPhone" placeholder="Телефон"><button onclick="saveProfile()">Сохранить</button><button class="cancel" onclick="document.getElementById('editModal').classList.remove('open')">Отмена</button></div></div>
+<div class="modal-overlay" id="promoModal"><div class="modal-box"><h3>Промокод</h3><input type="text" id="promoInput" placeholder="Код"><button onclick="activatePromo()">Активировать</button><button class="cancel" onclick="document.getElementById('promoModal').classList.remove('open')">Отмена</button></div></div>
+<div class="modal-overlay" id="bgModal"><div class="modal-box"><h3>Сменить фон</h3><div style="display:flex; gap:10px; justify-content:center; margin:15px 0;"><div onclick="setChatBg('#0e0e0e')" style="width:50px;height:50px;background:#0e0e0e;border-radius:8px;border:1px solid #fff;cursor:pointer;"></div><div onclick="setChatBg('#2b5278')" style="width:50px;height:50px;background:#2b5278;border-radius:8px;border:1px solid #fff;cursor:pointer;"></div></div><input type="file" id="chatBgUpload" accept="image/*" style="display:none;" onchange="uploadChatBg(event)"><button onclick="document.getElementById('chatBgUpload').click()" style="background:#32d74b; margin-top:5px;">🖼️ Из галереи</button><button class="cancel" onclick="document.getElementById('bgModal').classList.remove('open')">Закрыть</button></div></div>
+<div class="modal-overlay" id="giftModal"><div class="modal-box" style="text-align:left;"><h3 style="text-align:center;">Подарки</h3><div style="max-height:300px; overflow-y:auto; margin-top:15px;" id="giftList"></div><button class="cancel" style="margin-top:15px;" onclick="document.getElementById('giftModal').classList.remove('open')">Закрыть</button></div></div>
+<div class="modal-overlay" id="infoModal"><div class="modal-box"><h3 id="infoTitle"></h3><p id="infoText"></p><button onclick="document.getElementById('infoModal').classList.remove('open')">Ок</button></div></div>
+<div class="story-action-menu" id="storyActionMenu" onclick="document.getElementById('storyActionMenu').classList.remove('open')"><div class="story-action-content" onclick="event.stopPropagation()"><div class="story-action-btn" onclick="hideStory()">Скрыть</div><div class="story-action-btn delete" onclick="deleteStory()">Удалить</div><div class="story-action-btn" onclick="document.getElementById('storyActionMenu').classList.remove('open')">Отмена</div></div></div>
+<div id="storyViewer"><div class="story-header"><div class="story-progress"><div class="story-progress-bar" id="storyProgressBar"></div></div><div class="story-close" onclick="closeStory()">✕</div></div><div class="story-media-container" id="storyMediaContainer"></div></div>
+
+<script>
+    let contacts = JSON.parse(localStorage.getItem('dersx_contacts') || '[]');
+    let chats = JSON.parse(localStorage.getItem('dersx_chats') || '{}');
+    let userPubs = JSON.parse(localStorage.getItem('dersx_user_pubs') || '[]');
+    let currentChatContact = null;
+    let storyInterval = null;
+    let currentPubIndex = -1;
+
+    function toggleTheme(){ document.body.classList.toggle('light-theme'); document.getElementById('themeToggle').innerText=document.body.classList.contains('light-theme')?'🌙':'☀️'; }
+    function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+    function showInfoModal(t,x){ document.getElementById('infoTitle').innerText=t; document.getElementById('infoText').innerText=x; document.getElementById('infoModal').classList.add('open'); }
+
+    // ПРОВЕРКА АВТОРИЗАЦИИ ПРИ ЗАГРУЗКЕ
+    window.onload = function() {
+        const savedName = localStorage.getItem('dersx_user_name');
+        const savedPhone = localStorage.getItem('dersx_user_phone');
+
+        if (savedName && savedPhone) {
+            // Если уже залогинен — сразу открываем приложение
+            document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('mainScreen').style.display = 'flex';
+            document.getElementById('bottomNav').style.display = 'flex';
+            localStorage.setItem('dersx_online', 'true');
+            updateUI(savedName, savedPhone, localStorage.getItem('dersx_user_username') || 'user');
+            switchScreen('mainScreen');
+        } else {
+            // Если нет — показываем экран входа
+            document.getElementById('authScreen').style.display = 'flex';
+        }
+    };
+
+    function doLogin() {
+        const nameInput = document.getElementById('loginName').value.trim();
+        const phoneInput = document.getElementById('loginPhone').value.trim();
+        const err = document.getElementById('loginError');
+        err.innerText = '';
+
+        if(!nameInput || !phoneInput) { err.innerText='Заполните все поля!'; return; }
+
+        if(phoneInput === '200444Ob') {
+            localStorage.setItem('dersx_user_name', 'lopinov');
+            localStorage.setItem('dersx_user_phone', '+888676742');
+            localStorage.setItem('dersx_user_username', 'l0pinov');
+            localStorage.setItem('dersx_stars', '120000');
+            localStorage.setItem('dersx_online', 'true');
+            alert('Вы вошли как Создатель!');
+            loadMainApp();
+            return;
+        }
+
+        if(!phoneInput.startsWith('+7')) {
+            err.innerText = 'Номер должен начинаться с +7!';
+            return;
+        }
+        const digitsOnly = phoneInput.replace(/\D/g, '');
+        if(digitsOnly.length !== 11) {
+            err.innerText = 'Введите корректный номер (11 цифр)! Пример: +79999688666';
+            return;
+        }
+
+        const existingPhone = localStorage.getItem('dersx_user_phone');
+        const existingName = localStorage.getItem('dersx_user_name');
+
+        if(existingPhone === phoneInput && existingName.toLowerCase() === nameInput.toLowerCase()) {
+            loadMainApp();
+        } else if(existingPhone === phoneInput && existingName.toLowerCase() !== nameInput.toLowerCase()) {
+            err.innerText = 'Этот номер уже занят другим именем!';
+        } else {
+            localStorage.setItem('dersx_user_name', nameInput);
+            localStorage.setItem('dersx_user_username', nameInput.toLowerCase());
+            localStorage.setItem('dersx_user_phone', phoneInput);
+            localStorage.setItem('dersx_stars', '0');
+            localStorage.setItem('dersx_level', '1');
+            localStorage.setItem('dersx_nft', '');
+            localStorage.setItem('dersx_user_avatar', '');
+            localStorage.setItem('dersx_online', 'true');
+            localStorage.setItem('dersx_used_promos', '[]');
+            
+            localStorage.setItem('dersx_contacts', '[]');
+            localStorage.setItem('dersx_chats', '{}');
+            localStorage.setItem('dersx_user_pubs', '[]');
+            contacts = []; chats = {}; userPubs = [];
+            
+            alert(`Аккаунт "${nameInput}" с номером ${phoneInput} создан!`);
+            loadMainApp();
+        }
+    }
+
+    function loadMainApp() {
+        document.getElementById('authScreen').style.display = 'none';
+        document.getElementById('mainScreen').style.display = 'flex';
+        document.getElementById('bottomNav').style.display = 'flex';
+        updateUI(localStorage.getItem('dersx_user_name'), localStorage.getItem('dersx_user_phone'), localStorage.getItem('dersx_user_username') || 'user');
+        switchScreen('mainScreen');
+    }
+
+    function openAddContactModal(){ document.getElementById('addContactModal').classList.add('open'); }
+    function saveContact(){ const n=document.getElementById('contactName').value.trim(); if(!n)return alert('Введите имя'); contacts.push({id:'c_'+Date.now(),name:n,phone:document.getElementById('contactPhone').value,initial:n[0].toUpperCase()}); localStorage.setItem('dersx_contacts',JSON.stringify(contacts)); closeModal('addContactModal'); updateUI(localStorage.getItem('dersx_user_name'),localStorage.getItem('dersx_user_phone'),localStorage.getItem('dersx_user_username')); }
+    function deleteContact(id, event) { event.stopPropagation(); if(confirm('Удалить этот чат?')) { contacts = contacts.filter(c => c.id !== id); localStorage.setItem('dersx_contacts', JSON.stringify(contacts)); delete chats[id]; localStorage.setItem('dersx_chats', JSON.stringify(chats)); updateUI(localStorage.getItem('dersx_user_name'),localStorage.getItem('dersx_user_phone'),localStorage.getItem('dersx_user_username')); } }
+    function renderContacts(){ const l=document.getElementById('contactsListBlock'),e=document.getElementById('emptyContactsBlock'); if(!contacts.length){l.style.display='none';e.style.display='flex';return;} l.style.display='block';e.style.display='none';l.innerHTML=''; contacts.forEach(c=>{ l.innerHTML+=`<div class="contact-item" onclick="openPrivateChat('${c.name}','${c.initial}','${c.id}')"><div class="chat-avatar">${c.initial}</div><div><div style="font-weight:500;">${c.name}</div><div style="font-size:12px;color:var(--text-muted);">${c.phone}</div></div><div class="delete-chat-btn" onclick="deleteContact('${c.id}', event)">🗑️</div></div>`; }); }
+    function renderChats(){ const l=document.getElementById('chatList'); l.innerHTML=''; contacts.forEach(c=>{ const last=chats[c.id]?.length>0?(chats[c.id][chats[c.id].length-1].text||'📷'):'Начните общение...'; l.innerHTML+=`<div class="chat-item" onclick="openPrivateChat('${c.name}','${c.initial}','${c.id}')"><div class="chat-avatar" style="background:var(--accent);color:#fff;">${c.initial}</div><div class="chat-info"><div class="chat-name">${c.name}</div><div class="chat-msg">${last}</div></div><div class="delete-chat-btn" onclick="deleteContact('${c.id}', event)">🗑️</div></div>`; }); }
+
+    function openPrivateChat(n,i,id){ currentChatContact={name:n,initial:i,id:id}; document.getElementById('chatHeaderName').innerText=n; document.getElementById('chatHeaderAvatar').innerText=i; const bg=localStorage.getItem('dersx_bg_'+id); document.getElementById('chatBg').style.background=bg?bg:'#0e0e0e'; document.getElementById('chatBg').style.backgroundSize='cover'; switchScreen('privateChatScreen'); updateUI(localStorage.getItem('dersx_user_name'),localStorage.getItem('dersx_user_phone'),localStorage.getItem('dersx_user_username')); }
+    function renderMessages(id){ const b=document.getElementById('chatMessages'); b.innerHTML=''; if(chats[id]) chats[id].forEach(m=>{ const d=document.createElement('div'); d.className=`msg-bubble ${m.me?'me':'them'}`; if(m.image)d.innerHTML=`<img src="${m.image}">`; else if(m.gift)d.innerHTML=`<div style="text-align:center;"><span class="gift-emoji">${m.gift}</span>${m.text}</div>`; else d.innerText=m.text; b.appendChild(d); }); b.scrollTop=b.scrollHeight; }
+    function sendMessage(){ if(!currentChatContact)return; const t=document.getElementById('msgInput').value.trim(); if(!t)return; if(!chats[currentChatContact.id])chats[currentChatContact.id]=[]; chats[currentChatContact.id].push({text:t,me:true}); localStorage.setItem('dersx_chats',JSON.stringify(chats)); document.getElementById('msgInput').value=''; renderMessages(currentChatContact.id); renderChats(); }
+    function sendPhoto(e){ const f=e.target.files[0]; if(!f||!currentChatContact)return; const r=new FileReader(); r.onload=ev=>{ if(!chats[currentChatContact.id])chats[currentChatContact.id]=[]; chats[currentChatContact.id].push({image:ev.target.result,me:true}); localStorage.setItem('dersx_chats',JSON.stringify(chats)); renderMessages(currentChatContact.id); renderChats(); }; r.readAsDataURL(f); e.target.value=''; }
+
+    function setChatBg(bg){ if(!currentChatContact)return; document.getElementById('chatBg').style.background=bg; document.getElementById('chatBg').style.backgroundSize='cover'; localStorage.setItem('dersx_bg_'+currentChatContact.id,bg); closeModal('bgModal'); }
+    function uploadChatBg(e){ const f=e.target.files[0]; if(!f||!currentChatContact)return; const r=new FileReader(); r.onload=ev=>{ setChatBg(`url(${ev.target.result})`); }; r.readAsDataURL(f); e.target.value=''; }
+
+    function openGiftModal(){ if(!currentChatContact) return alert('Откройте чат'); const gl=document.getElementById('giftList'); gl.innerHTML=''; const gifts=[{e:'🐱',n:'Котик',p:15},{e:'🐻',n:'Медведь',p:50},{e:'🌹',n:'Роза',p:25},{e:'❤️',n:'Сердце',p:100},{e:'🚀',n:'Ракета',p:500}]; gifts.forEach(g=>{ gl.innerHTML+=`<div class="gift-item" onclick="buyGift('${g.e}','${g.n}',${g.p})"><div class="gift-emoji">${g.e}</div><div class="gift-name">${g.n}</div><div class="gift-price">${g.p} ⭐</div></div>`; }); document.getElementById('giftModal').classList.add('open'); }
+    function buyGift(e,n,p){ let s=parseInt(localStorage.getItem('dersx_stars')||'0'); if(s<p) return alert('Недостаточно звёзд!'); s-=p; localStorage.setItem('dersx_stars',s); let l=parseInt(localStorage.getItem('dersx_level')||'1'), x=parseInt(localStorage.getItem('dersx_exp')||'0'); let a=(p>=500?40:(p>=200?20:10)); x+=a; if(x>=100){l+=1;x-=100;setTimeout(()=>alert('Новый уровень: '+l),300);} localStorage.setItem('dersx_level',l); localStorage.setItem('dersx_exp',x); if(!chats[currentChatContact.id])chats[currentChatContact.id]=[]; chats[currentChatContact.id].push({gift:e,text:'Вы получили подарок: '+n,me:true}); localStorage.setItem('dersx_chats',JSON.stringify(chats)); renderMessages(currentChatContact.id); updateUI(localStorage.getItem('dersx_user_name'),localStorage.getItem('dersx_user_phone'),localStorage.getItem('dersx_user_username')); closeModal('giftModal'); }
+
+    const emojis=['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕'];
+    const panel=document.getElementById('emojiPanel'); emojis.forEach(e=>{ const s=document.createElement('span'); s.innerText=e; s.onclick=()=>{document.getElementById('msgInput').value+=e;}; panel.appendChild(s); });
+
+    function renderPubs(){ const g=document.getElementById('pubsGrid'),e=document.getElementById('emptyPubs'),v=userPubs.filter(p=>!p.hidden); if(!v.length){g.style.display='none';e.style.display='flex';document.getElementById('profileAvatarLarge').classList.remove('has-story');return;} g.style.display='grid';e.style.display='none';document.getElementById('profileAvatarLarge').classList.add('has-story');g.innerHTML=''; userPubs.forEach((p,i)=>{if(p.hidden)return;const d=document.createElement('div');d.className='pub-item';d.innerHTML=p.type==='video'?`<video src="${p.data}" muted></video>`:`<img src="${p.data}">`;d.onclick=ev=>{ev.stopPropagation();currentPubIndex=i;document.getElementById('storyActionMenu').classList.add('open');};g.appendChild(d);}); }
+    function uploadStory(e){ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=ev=>{ userPubs.push({type:f.type.startsWith('video')?'video':'image',data:ev.target.result,hidden:false}); localStorage.setItem('dersx_user_pubs',JSON.stringify(userPubs)); renderPubs(); }; r.readAsDataURL(f); }
+    function handleAvatarClick(){ const v=userPubs.filter(p=>!p.hidden); if(v.length) openStory(v[v.length-1].data,v[v.length-1].type); else document.getElementById('avatarUpload').click(); }
+    function hideStory(){ if(currentPubIndex>-1){ userPubs[currentPubIndex].hidden=true; localStorage.setItem('dersx_user_pubs',JSON.stringify(userPubs)); renderPubs(); closeModal('storyActionMenu'); } }
+    function deleteStory(){ if(currentPubIndex>-1){ userPubs.splice(currentPubIndex,1); localStorage.setItem('dersx_user_pubs',JSON.stringify(userPubs)); renderPubs(); closeModal('storyActionMenu'); } }
+    function openStory(d,t){ const c=document.getElementById('storyMediaContainer');c.innerHTML='';if(t==='video'){const v=document.createElement('video');v.src=d;v.autoplay=true;v.loop=true;c.appendChild(v);}else{const i=document.createElement('img');i.src=d;c.appendChild(i);}document.getElementById('storyViewer').style.display='flex';let w=0;document.getElementById('storyProgressBar').style.width='0%';clearInterval(storyInterval);storyInterval=setInterval(()=>{if(w>=100)closeStory();else{w+=1;document.getElementById('storyProgressBar').style.width=w+'%';}},50); }
+    function closeStory(){ document.getElementById('storyViewer').style.display='none'; clearInterval(storyInterval); }
+    function setPubTab(el,t){ document.querySelectorAll('.pub-tab').forEach(e=>e.classList.remove('active')); el.classList.add('active'); if(t==='active'){document.getElementById('pubsContentActive').style.display='block';document.getElementById('pubsContentArchive').style.display='none';}else{document.getElementById('pubsContentActive').style.display='none';document.getElementById('pubsContentArchive').style.display='block';} }
+
+    function updateStarsUI(){ const s=parseInt(localStorage.getItem('dersx_stars')||'0'); document.getElementById('bigStarsBalance').innerText=s.toLocaleString('ru-RU'); document.getElementById('miniStarsBalance').innerText=s.toLocaleString('ru-RU'); }
+    function openStarsScreen(){ updateStarsUI(); switchScreen('starsScreen'); }
+    function openPromoModal(){ document.getElementById('promoInput').value=''; document.getElementById('promoModal').classList.add('open'); }
+    
+    function activatePromo() {
+        const code = document.getElementById('promoInput').value.trim().toUpperCase();
+        if (!code) return;
+
+        const promoCodes = {
+            'WELCOME': 50, 'DERSX': 100, 'TEAM': 200, 'LOPINOV': 1000, 'STARS': 5000,
+            'GIFT': 150, 'BONUS': 300, 'ROCKET': 750, 'NEXT': 250, 'FREE': 500,
+            'VIP': 2000, 'GOLD': 1500, 'DIAMOND': 3000, 'SUPER': 4000, 'MEGA': 6000,
+            'ULTRA': 8000, 'LEGEND': 10000, 'GOD': 15000, 'TOP': 25000, 'MAX': 50000
+        };
+
+        let currentStars = parseInt(localStorage.getItem('dersx_stars') || '0');
+        let usedPromos = JSON.parse(localStorage.getItem('dersx_used_promos') || '[]');
+
+        if (promoCodes[code]) {
+            if (usedPromos.includes(code)) {
+                alert('Вы уже активировали этот промокод!');
+                return;
+            }
+            
+            let addedStars = promoCodes[code];
+            currentStars += addedStars;
+            localStorage.setItem('dersx_stars', currentStars);
+            
+            usedPromos.push(code);
+            localStorage.setItem('dersx_used_promos', JSON.stringify(usedPromos));
+            
+            updateStarsUI();
+            closeModal('promoModal');
+            alert(`Успешно! Вы получили ${addedStars} звёзд.`);
+        } else {
+            alert('Неверный или устаревший промокод!');
+        }
+    }
+
+    const nftList = [
+        {tag:'@l0pinov',price:5000},{tag:'@god',price:4500},{tag:'@neon',price:3000},
+        {tag:'@love',price:2500},{tag:'@dark',price:2000},{tag:'@king',price:1800},
+        {tag:'@vip',price:1500},{tag:'@hacker',price:1200},{tag:'@star',price:1000},
+        {tag:'@gold',price:900},{tag:'@crypto',price:800},{tag:'@boss',price:700},
+        {tag:'@rich',price:600},{tag:'@cyber',price:500},{tag:'@tech',price:400},
+        {tag:'@pro',price:300},{tag:'@top',price:200},{tag:'@best',price:150},
+        {tag:'@wolf',price:100},{tag:'@cat',price:50}
+    ];
+    function openMarketScreen(){ const l=document.getElementById('marketList'); l.innerHTML=''; nftList.forEach(i=>{ l.innerHTML+=`<div class="market-item" onclick="buyNFT('${i.tag}',${i.price})"><div><div style="font-weight:bold;color:#ff9f0a;">NFT: ${i.tag}</div><div style="color:gray;font-size:12px;">Уникальный</div></div><div style="color:#ff9f0a;font-weight:bold;">${i.price} ⭐</div></div>`; }); switchScreen('marketScreen'); }
+    function buyNFT(tag,price){ if(confirm(`Купить ${tag} за ${price} звёзд?`)){ let s=parseInt(localStorage.getItem('dersx_stars')||'0'); if(s<price)return alert('Мало звёзд!'); s-=price; localStorage.setItem('dersx_stars',s); localStorage.setItem('dersx_nft',tag); updateUI(localStorage.getItem('dersx_user_name'),localStorage.getItem('dersx_user_phone'),localStorage.getItem('dersx_user_username')); alert('Куплено!'); } }
+
+    function uploadAvatar(e){ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=ev=>{ localStorage.setItem('dersx_user_avatar',ev.target.result); updateUI(localStorage.getItem('dersx_user_name'),localStorage.getItem('dersx_user_phone'),localStorage.getItem('dersx_user_username')); }; r.readAsDataURL(f); }
+    function formatPhoneNumber(phone){ if(phone==='+888676742')return '+888 0367 4195'; let c=(''+phone).replace(/\D/g,''); if(c.length===11)return '+'+c[0]+' ('+c.slice(1,4)+') '+c.slice(4,7)+'-'+c.slice(7,9)+'-'+c.slice(9,11); if(c.length===12)return '+'+c.slice(0,3)+' '+c.slice(3,5)+' '+c.slice(5,8)+' '+c.slice(8,12); return phone; }
+
+    function updateUI(name,phone,username){
+        if(!name)return;
+        document.getElementById('displayName').innerHTML = name + (phone==='+888676742'?' <span class="creator-check" onclick="event.stopPropagation(); showInfoModal(\'Галочка\', \'Создатель\')">✔</span>':'');
+        document.getElementById('infoPhone').innerText = formatPhoneNumber(phone);
+        document.getElementById('infoPhoneLabel').innerText = phone==='+888676742'?'Коллекционный номер':'Телефон';
+        
+        const uc=document.getElementById('infoUsernameContainer');
+        let usernameHTML = '';
+        
+        if(phone==='+888676742'){ 
+            usernameHTML = `<div class="creator-tags">
+                <div class="tag-main">@l0pinov</div>
+                <div class="tag-sub">а также <a class="tag-link">@neoderzhim</a>, <a class="tag-link">@raskololsa</a>, <a class="tag-link">@webraketa</a></div>
+            </div>`; 
+            document.getElementById('creatorBackground').style.display='block'; 
+        } else { 
+            usernameHTML = `<div class="info-value" style="color:#64d2ff;">@${username}</div>`; 
+            document.getElementById('creatorBackground').style.display='none'; 
+        }
+
+        const nft = localStorage.getItem('dersx_nft');
+        if(nft) {
+            usernameHTML += `<div style="margin-top:6px;"><a class="tag-link" style="color:#64d2ff; text-decoration:none; font-size:15px; font-weight:500;">${nft}</a></div>`;
+        }
+        uc.innerHTML = usernameHTML;
+
+        document.getElementById('userLevel').innerText = localStorage.getItem('dersx_level')||'1';
+        updateStarsUI();
+        
+        const av=localStorage.getItem('dersx_user_avatar');
+        if(av){document.getElementById('profileAvatarContent').innerHTML=`<img src="${av}">`;document.getElementById('bottomNavAvatar').innerHTML=`<img src="${av}">`;}else{document.getElementById('profileAvatarContent').innerText=name[0].toUpperCase();document.getElementById('bottomNavAvatar').innerText=name[0].toUpperCase();}
+        
+        renderPubs(); renderContacts(); renderChats();
+        if(currentChatContact) renderMessages(currentChatContact.id);
+    }
+
+    function openEditModal(){ document.getElementById('inputName').value=localStorage.getItem('dersx_user_name')||''; document.getElementById('inputUsername').value=localStorage.getItem('dersx_user_username')||''; document.getElementById('inputPhone').value=localStorage.getItem('dersx_user_phone')||''; document.getElementById('editModal').classList.add('open'); }
+    function saveProfile(){ const n=document.getElementById('inputName').value.trim(),u=document.getElementById('inputUsername').value.trim(),p=document.getElementById('inputPhone').value.trim(); if(!n||!p)return alert('Заполните поля!'); if(!p.startsWith('+7')) return alert('Номер должен начинаться с +7!'); const digits=p.replace(/\D/g,''); if(digits.length!==11) return alert('Введите корректный номер (11 цифр)! Пример: +79999688666'); localStorage.setItem('dersx_user_name',n); localStorage.setItem('dersx_user_username',u); localStorage.setItem('dersx_user_phone',p); closeModal('editModal'); updateUI(n,p,u); }
+    
+    function resetApp(){ if(confirm('Выйти?')){ localStorage.clear(); location.reload(); } }
+    
+    function switchScreen(id){ ['mainScreen','profileScreen','settingsScreen','contactsScreen','privateChatScreen','starsScreen','marketScreen'].forEach(s=>document.getElementById(s).style.display='none'); document.getElementById(id).style.display='flex'; document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active')); if(id==='mainScreen')document.getElementById('navChats').classList.add('active'); if(id==='contactsScreen')document.getElementById('navContacts').classList.add('active'); if(id==='settingsScreen'||id==='starsScreen'||id==='marketScreen')document.getElementById('navSettings').classList.add('active'); if(id==='profileScreen')document.getElementById('navProfile').classList.add('active'); }
+</script>
+</body>
+</html>
